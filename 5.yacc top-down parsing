@@ -1,0 +1,67 @@
+cal_digit.l
+
+%{
+#include "y.tab.h"
+%}
+
+digit   [0-9]
+
+%%
+
+{digit}     { yylval = yytext[0] - '0'; return DIGIT; }
+[ \t]+      { /* skip */ }
+"\n"        { return EOL; }
+"+"         { return '+'; }
+"*"         { return '*'; }
+"("         { return '('; }
+")"         { return ')'; }
+.           { return yytext[0]; }
+
+%%
+
+int yywrap() { return 1; }
+
+
+cal.digit.y----------------
+
+%{
+#include <stdio.h>
+#include <stdlib.h>
+int yylex();
+void yyerror(const char *s);
+%}
+
+%token DIGIT EOL
+%left '+'
+%left '*'
+
+%%
+
+input:
+        /* empty */
+        | input line
+        ;
+
+line:
+        expr EOL   { printf("= %d\n", $1); }
+        | EOL
+        ;
+
+expr:
+        expr '+' expr   { $$ = $1 + $3; }
+        | expr '*' expr { $$ = $1 * $3; }
+        | '(' expr ')'  { $$ = $2; }
+        | DIGIT         { $$ = $1; }
+        ;
+
+%%
+
+void yyerror(const char *s) {
+    fprintf(stderr, "Error: %s\n", s);
+}
+
+int main() {
+    printf("Enter expressions (digits, +, *, parentheses) followed by newline.\n");
+    yyparse();
+    return 0;
+}
