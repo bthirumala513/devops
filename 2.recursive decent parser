@@ -1,0 +1,57 @@
+#include <stdio.h>
+#include <string.h>
+#include <stdlib.h>
+char input[100];
+int pos = 0;
+char lookahead;
+void S();
+void L();
+void Lprime();
+void Match(char ch);
+void Match(char ch) {
+ if (lookahead == ch) {
+ lookahead = input[++pos];
+ } else {
+ printf("Error: Expected '%c' at position %d, found '%c'\n", ch, pos, lookahead);
+ exit(1);
+ }
+}
+void S() {
+ if (lookahead == '(') {
+ Match('(');
+ L();
+ Match(')');
+ }
+ else if (lookahead == 'a') {
+ Match('a');
+ }
+ else {
+ printf("Error: Unexpected symbol '%c' at position %d\n", lookahead, pos);
+ exit(1);
+ }
+}
+void L() {
+ S();
+ Lprime();
+}
+void Lprime() {
+ if (lookahead == ',') {
+ Match(',');
+ S();
+ Lprime();
+ }
+ // epsilon case → do nothing
+}
+int main() {
+ printf("Enter an expression: ");
+ scanf("%s", input);
+ lookahead = input[pos];
+ S();
+ // Accept only if the last character is '#'
+ if (lookahead == '#') {
+ printf("Parsing successful: Input is valid.\n");
+ } else {
+ printf("Parsing failed: Extra symbols found at position %d\n", pos);
+ }
+ return 0;
+}
